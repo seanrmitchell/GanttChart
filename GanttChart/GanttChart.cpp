@@ -30,6 +30,7 @@ public:
 		turnAround = endTime - arrivalTime;
 	}
 
+	// Constructor for class objects
 	GanttChart(int x, int y, int z) {
 		procID = x;
 		serviceTime = y;
@@ -41,11 +42,10 @@ public:
 		totalWait = 0;
 		turnAround = 0;
 		startTime = 0;
-
-		//cout << "ID" << " " << this->procID << " " << "Ready!" << "\n";
 	}
 };
 
+// Console display of table
 void BuildTable(std::vector<GanttChart> arr) {
 	cout
 		<< left
@@ -97,6 +97,7 @@ void BuildTable(std::vector<GanttChart> arr) {
 	}
 }
 
+// Scheduler simulator. Returns a vector of the class type.
 std::vector<GanttChart> Scheduler(std::vector<GanttChart> arr, int cxtSwitch) {
 
 	// Total processing time
@@ -108,6 +109,7 @@ std::vector<GanttChart> Scheduler(std::vector<GanttChart> arr, int cxtSwitch) {
 	arr[0].startTime = 0;
 	int x = 1;
 
+	// Source Scheduler
 	while (!ready.empty()) {
 
 		// Determines whether a entity should enter ready queue based on arrival time
