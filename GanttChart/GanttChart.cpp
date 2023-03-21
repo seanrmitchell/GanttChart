@@ -1,9 +1,12 @@
+// Gantt Chart Demonstration Project
+// Completed 3/20/23
+// Sean Robert Mitchell
+
 #include <iostream>
 #include <iomanip>
 #include <queue>
 using namespace std;
 
-int globalTime = 0;
 int quantum = 10;
 
 
@@ -43,7 +46,7 @@ public:
 	}
 };
 
-void BuildTable(GanttChart arr[]) {
+void BuildTable(std::vector<GanttChart> arr) {
 	cout
 		<< left
 		<< setw(5)
@@ -94,32 +97,32 @@ void BuildTable(GanttChart arr[]) {
 	}
 }
 
-//Main method
-int main() {
-	// Identifies processes parameters for constructor
-	GanttChart arr[5] = {
-		GanttChart(1, 75, 0),
-		GanttChart(2, 40, 10),
-		GanttChart(3, 25, 10),
-		GanttChart(4, 20, 80),
-		GanttChart(5, 45, 85)
-	};
+std::vector<GanttChart> Scheduler(std::vector<GanttChart> arr, int cxtSwitch) {
 
-	queue<GanttChart> ready;
+	// Total processing time
+	int globalTime = 0;
+
+	// Ready queue intitialization
+	std::queue<GanttChart> ready;
 	ready.push(arr[0]);
 	arr[0].startTime = 0;
 	int x = 1;
-	
-	// Performs chart simulation of processor
+
 	while (!ready.empty()) {
-		
+
 		// Determines whether a entity should enter ready queue based on arrival time
-		if (arr[x].arrivalTime <= globalTime && x < 5) {
+		if (x < arr.size() && arr[x].arrivalTime <= globalTime && ready.front().procID == arr[0].procID) {
+
 			ready.push(arr[x]);
-			ready.push(ready.front());
-			ready.pop();
+
+			// Rearranges array to have new arrival at the head, once it is available to start
+			for (int i = 1; i < ready.size(); i++) {
+				ready.push(ready.front());
+				ready.pop();
+			}
+
 			x++;
-		}
+		} 
 
 		// Processes how much of service is remaining, and set globalTime to the remaining service time.
 		if (ready.front().remainingService <= quantum) {
@@ -127,32 +130,58 @@ int main() {
 			int temp = ready.front().procID - 1;
 			arr[temp].endTime = globalTime;
 			ready.pop();
-		} 
+
+			globalTime += cxtSwitch;
+		}
 		else {
 
+			// If the remainingService time and totalServiceTime are equal it sets the current processes startTime to the globalTime
 			if (ready.front().remainingService == ready.front().serviceTime) {
 				int temp = ready.front().procID - 1;
 				arr[temp].startTime = globalTime;
 			}
 
+			// Subtracts quantum from remainingService, and adds the quantum and contextSwitch to globalTime
 			ready.front().remainingService -= quantum;
-			globalTime += quantum;
+
+			globalTime += (quantum + cxtSwitch);
+
+			// Sets up following process in the queue
 			ready.push(ready.front());
 			ready.pop();
 		}
-
-		
 	}
 
-	for (int i = 0; i < 5; i++) {
+	// Sets remaining values based on known information, and inserts into vector
+	for (int i = 0; i < arr.size(); i++) {
 		arr[i].CalculateIntitialWait();
 		arr[i].CalculateTotalWait();
 		arr[i].CalculateTurnAroundTime();
 	}
 
-	BuildTable(arr);
+	return arr;
+}
 
-	//cout << "ProcOne EndTime: " << processArray[1].CalculateEndTime();
+//Main method
+int main() {
+	// Identifies processes parameters for constructor
+	vector<GanttChart> arr = {
+		GanttChart(1, 75, 0),
+		GanttChart(2, 40, 10),
+		GanttChart(3, 25, 10),
+		GanttChart(4, 20, 80),
+		GanttChart(5, 45, 85)
+	};
+
+	// Calls the BuildTable method returning a vector from the Scheduler method containing the correct scheduled processes
+	// 
+	// No context switch
+	cout << "Context Switch 0" << "\n";
+	BuildTable(Scheduler(arr, 0));
+	cout << "\n" << "\n";
+	// context switch 10
+	cout << "Context Switch 10" << "\n";
+	BuildTable(Scheduler(arr, 10));
 
 	return 0;
 }
