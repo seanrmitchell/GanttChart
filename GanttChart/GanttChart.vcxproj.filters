@@ -18,5 +18,8 @@
     <ClCompile Include="GanttChart.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="RNDServArr.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

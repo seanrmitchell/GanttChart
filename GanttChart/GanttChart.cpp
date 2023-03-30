@@ -47,7 +47,7 @@ public:
 
 // Console display of table
 void BuildTable(std::vector<GanttChart> arr) {
-	cout
+	std::cout
 		<< left
 		<< setw(5)
 		<< "ID"
@@ -68,7 +68,7 @@ void BuildTable(std::vector<GanttChart> arr) {
 		<< endl;
 
 	for (int i = 0; i < 5; i++) {
-		cout
+		std::cout
 			<< left
 			<< setw(5)
 			<< arr[i].procID
@@ -164,8 +164,49 @@ std::vector<GanttChart> Scheduler(std::vector<GanttChart> arr, int cxtSwitch) {
 	return arr;
 }
 
+void genArrival() {
+
+	std::vector<int> interArrival{};
+
+	interArrival.push_back(0);
+
+	srand(time(0));
+
+	std::cout << "Random Arrival Times: \n\n";
+
+	for (int i = 1; i < 100; i++) {
+		int r = (rand() % 6) + 4;
+		interArrival.push_back(interArrival[i - 1] + r);
+		cout << interArrival[i - 1] + r << "\t";
+	}
+
+	std::cout << "\n\n";
+}
+
+void genService() {
+
+	std::vector<int> service{};
+
+	srand(time(0));
+
+	std::cout << "Random Service Times: \n\n";
+
+	for (int i = 0; i < 101; i++) {
+		int r = (rand() % 3) + 2;
+		service.push_back(r);
+		cout << r << "\t"; 
+	}
+
+	std::cout << "\n\n";
+}
+
 //Main method
 int main() {
+
+	genArrival();
+
+	genService();
+
 	// Identifies processes parameters for constructor
 	vector<GanttChart> arr = {
 		GanttChart(1, 75, 0),
@@ -178,11 +219,11 @@ int main() {
 	// Calls the BuildTable method returning a vector from the Scheduler method containing the correct scheduled processes
 	// 
 	// No context switch
-	cout << "Context Switch 0" << "\n";
+	std::cout << "Context Switch 0" << "\n";
 	BuildTable(Scheduler(arr, 0));
-	cout << "\n" << "\n";
+	std::cout << "\n" << "\n";
 	// context switch 10
-	cout << "Context Switch 10" << "\n";
+	std::cout << "Context Switch 10" << "\n";
 	BuildTable(Scheduler(arr, 10));
 
 	return 0;
