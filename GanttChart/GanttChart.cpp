@@ -5,9 +5,10 @@
 #include <iostream>
 #include <iomanip>
 #include <queue>
+#include <deque>
 using namespace std;
 
-int quantum = 10;
+int quantum = 1;
 
 
 // Constructor for inputs
@@ -67,6 +68,7 @@ void BuildTable(std::vector<GanttChart> arr) {
 		<< "Turn Around"
 		<< endl;
 
+	// first 5 values
 	for (int i = 0; i < 5; i++) {
 		std::cout
 			<< left
@@ -95,6 +97,38 @@ void BuildTable(std::vector<GanttChart> arr) {
 			<< arr[i].turnAround
 			<< endl;
 	}
+
+	cout << "\n\n";
+
+	// last 5 values
+	for (int i = arr.size() - 5; i < arr.size(); i++) {
+		std::cout
+			<< left
+			<< setw(5)
+			<< arr[i].procID
+			<< left
+			<< setw(15)
+			<< arr[i].serviceTime
+			<< left
+			<< setw(15)
+			<< arr[i].arrivalTime
+			<< left
+			<< setw(15)
+			<< arr[i].startTime
+			<< left
+			<< setw(15)
+			<< arr[i].endTime
+			<< left
+			<< setw(15)
+			<< arr[i].intialWait
+			<< left
+			<< setw(15)
+			<< arr[i].totalWait
+			<< left
+			<< setw(15)
+			<< arr[i].turnAround
+			<< endl;
+	}
 }
 
 // Scheduler simulator. Returns a vector of the class type.
@@ -104,53 +138,53 @@ std::vector<GanttChart> Scheduler(std::vector<GanttChart> arr, int cxtSwitch) {
 	int globalTime = 0;
 
 	// Ready queue intitialization
-	std::queue<GanttChart> ready;
-	ready.push(arr[0]);
+	std::deque<GanttChart> ready;
+
+	ready.push_back(arr[0]);
 	arr[0].startTime = 0;
 	int x = 1;
 
 	// Source Scheduler
-	while (!ready.empty()) {
+	while (x < arr.size() || !ready.empty()) {
 
-		// Determines whether a entity should enter ready queue based on arrival time
-		if (x < arr.size() && arr[x].arrivalTime <= globalTime && ready.front().procID == arr[0].procID) {
+		// Determines whether an arrived entity may begin process
+		if (x < arr.size() && arr[x].arrivalTime <= globalTime && (ready.empty() || ready.front().procID < ready.back().procID)) {
+			cout << "Next \n";
+			ready.push_front(arr[x]);
+			x++;
+		}
 
-			ready.push(arr[x]);
+		if (!ready.empty()) {
 
-			// Rearranges array to have new arrival at the head, once it is available to start
-			for (int i = 1; i < ready.size(); i++) {
-				ready.push(ready.front());
-				ready.pop();
+			// Processes how much of service is remaining, and set globalTime to the remaining service time.
+			if (ready.front().remainingService <= quantum) {
+				globalTime += ready.front().remainingService;
+				int temp = ready.front().procID - 1;
+				arr[temp].endTime = globalTime;
+				ready.pop_front();
+
+				globalTime += cxtSwitch;
+			}
+			else {
+
+				// If the remainingService time and totalServiceTime are equal it sets the current processes startTime to the globalTime
+				if (ready.front().remainingService == ready.front().serviceTime) {
+					int temp = ready.front().procID - 1;
+					arr[temp].startTime = globalTime;
+				}
+
+				// Subtracts quantum from remainingService, and adds the quantum and contextSwitch to globalTime
+				ready.front().remainingService -= quantum;
+
+				globalTime += (quantum + cxtSwitch);
+
+				ready.push_back(ready.front());
+				ready.pop_front();
 			}
 
-			x++;
-		} 
-
-		// Processes how much of service is remaining, and set globalTime to the remaining service time.
-		if (ready.front().remainingService <= quantum) {
-			globalTime += ready.front().remainingService;
-			int temp = ready.front().procID - 1;
-			arr[temp].endTime = globalTime;
-			ready.pop();
-
-			globalTime += cxtSwitch;
 		}
 		else {
-
-			// If the remainingService time and totalServiceTime are equal it sets the current processes startTime to the globalTime
-			if (ready.front().remainingService == ready.front().serviceTime) {
-				int temp = ready.front().procID - 1;
-				arr[temp].startTime = globalTime;
-			}
-
-			// Subtracts quantum from remainingService, and adds the quantum and contextSwitch to globalTime
-			ready.front().remainingService -= quantum;
-
-			globalTime += (quantum + cxtSwitch);
-
-			// Sets up following process in the queue
-			ready.push(ready.front());
-			ready.pop();
+			globalTime += 1;
 		}
 	}
 
@@ -164,16 +198,19 @@ std::vector<GanttChart> Scheduler(std::vector<GanttChart> arr, int cxtSwitch) {
 	return arr;
 }
 
-void genArrival() {
+std::vector<int> genArrival() {
 
+	// array of arrival times
 	std::vector<int> interArrival{};
 
 	interArrival.push_back(0);
 
+	// initialize rand
 	srand(time(0));
 
 	std::cout << "Random Arrival Times: \n\n";
 
+	// fills the array with random interarrival times between 4-9
 	for (int i = 1; i < 100; i++) {
 		int r = (rand() % 6) + 4;
 		interArrival.push_back(interArrival[i - 1] + r);
@@ -181,16 +218,21 @@ void genArrival() {
 	}
 
 	std::cout << "\n\n";
+
+	return interArrival;
 }
 
-void genService() {
+std::vector<int> genService() {
 
+	// array of service times
 	std::vector<int> service{};
 
+	// initialize rand
 	srand(time(0));
 
 	std::cout << "Random Service Times: \n\n";
 
+	// fills the array with random values 2-6
 	for (int i = 0; i < 101; i++) {
 		int r = (rand() % 3) + 2;
 		service.push_back(r);
@@ -198,23 +240,24 @@ void genService() {
 	}
 
 	std::cout << "\n\n";
+
+	return service;
 }
 
 //Main method
 int main() {
 
-	genArrival();
+	std::vector<int> arrival = genArrival();
 
-	genService();
+	std::vector<int> service = genService();
 
-	// Identifies processes parameters for constructor
-	vector<GanttChart> arr = {
-		GanttChart(1, 75, 0),
-		GanttChart(2, 40, 10),
-		GanttChart(3, 25, 10),
-		GanttChart(4, 20, 80),
-		GanttChart(5, 45, 85)
-	};
+	
+	vector<GanttChart> arr;
+
+	// Identifies processes parameters for constructor with random arrival and service times for each
+	for (int i = 0; i < arrival.size(); i++) {
+		arr.push_back(GanttChart(1+i, service[i], arrival[i]));
+	}
 
 	// Calls the BuildTable method returning a vector from the Scheduler method containing the correct scheduled processes
 	// 
