@@ -69,7 +69,7 @@ void BuildTable(std::vector<GanttChart> arr) {
 		<< endl;
 
 	// first 5 values
-	for (int i = 0; i < 5; i++) {
+	for (int i = 0; i < 10; i++) {
 		std::cout
 			<< left
 			<< setw(5)
@@ -101,7 +101,7 @@ void BuildTable(std::vector<GanttChart> arr) {
 	cout << "\n\n";
 
 	// last 5 values
-	for (int i = arr.size() - 5; i < arr.size(); i++) {
+	for (int i = arr.size() - 10; i < arr.size(); i++) {
 		std::cout
 			<< left
 			<< setw(5)
@@ -129,6 +129,30 @@ void BuildTable(std::vector<GanttChart> arr) {
 			<< arr[i].turnAround
 			<< endl;
 	}
+
+	int tempArr = 0;
+	int tempServ = 0;
+	int tempTurnA = 0;
+	int tempTotalW = 0;
+
+	
+
+	for (int i = 0; i < arr.size(); i++) {
+		tempArr += arr[i].arrivalTime;
+		tempServ += arr[i].serviceTime;
+		tempTurnA += arr[i].turnAround;
+		tempTotalW += arr[i].totalWait;
+	}
+
+	tempArr = tempArr / arr.size();
+	tempServ = tempServ / arr.size();
+	tempTurnA = tempTurnA / arr.size();
+	tempTotalW = tempTotalW / arr.size();
+
+	cout << "Average Interarrival Time: " << tempArr << "\n";
+	cout << "Average Service Time: " << tempServ << "\n";
+	cout << "Average Turnaround Time: " << tempTurnA << "\n";
+	cout << "Average Total Wait Time: " << tempTotalW << "\n";
 }
 
 // Scheduler simulator. Returns a vector of the class type.
@@ -149,7 +173,6 @@ std::vector<GanttChart> Scheduler(std::vector<GanttChart> arr, int cxtSwitch) {
 
 		// Determines whether an arrived entity may begin process
 		if (x < arr.size() && arr[x].arrivalTime <= globalTime && (ready.empty() || ready.front().procID < ready.back().procID)) {
-			cout << "Next \n";
 			ready.push_front(arr[x]);
 			x++;
 		}
