@@ -257,7 +257,7 @@ std::vector<int> genService() {
 
 	// fills the array with random values 2-6
 	for (int i = 0; i < 101; i++) {
-		int r = (rand() % 3) + 2;
+		int r = (rand() % 4) + 2;
 		service.push_back(r);
 		cout << r << "\t"; 
 	}
